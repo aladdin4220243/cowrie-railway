@@ -12,11 +12,9 @@ WORKDIR /cowrie
 RUN pip install --no-cache-dir -e . && \
     pip install --no-cache-dir requests
 
-# إنشاء الـ fake filesystem
-RUN cowrie-setup
-
-# إعداد المجلدات
-RUN mkdir -p /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
+RUN mkdir -p share/cowrie/contents && \
+    cp -r honeyfs/. share/cowrie/contents/ && \
+    mkdir -p /cowrie/etc /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
 
 COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
 COPY forwarder.py  /cowrie/forwarder.py
@@ -27,6 +25,5 @@ RUN useradd -m cowrie && \
     chmod +x /entrypoint.sh
 
 USER cowrie
-
 EXPOSE 2222
 ENTRYPOINT ["/entrypoint.sh"]
