@@ -1,28 +1,20 @@
-[honeypot]
-hostname = svr04
-log_path = var/log/cowrie
-download_path = var/lib/cowrie/downloads
-share_path = share/cowrie
-state_path = var/lib/cowrie
-etc_path = etc
-contents_path = share/cowrie/contents
-close_timeout = 30
-interactive_timeout = 180
+#!/bin/bash
+set -e
 
-[ssh]
-enabled = true
-listen_endpoints = tcp:2222:interface=0.0.0.0
-version = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
-rsa_public_key = etc/ssh_host_rsa_key.pub
-rsa_private_key = etc/ssh_host_rsa_key
-public_key_auth = false
+cd /cowrie
 
-[telnet]
-enabled = false
+echo "==> Starting Cowrie..."
 
-[output_jsonlog]
-enabled = true
-logfile = ${honeypot:log_path}/cowrie.json
+mkdir -p etc var/log/cowrie var/lib/cowrie/downloads
 
-[llm]
-enabled = false
+if [ ! -f etc/ssh_host_rsa_key ]; then
+    ssh-keygen -t rsa -b 2048 -f etc/ssh_host_rsa_key -N "" -q
+    echo "==> RSA key generated"
+fi
+
+chmod 600 etc/ssh_host_rsa_key
+
+echo "==> Starting forwarder..."
+python /cowrie/forwarder.py &
+
+twistd -n --pidfile= --rundir=/cowrie cowrie
