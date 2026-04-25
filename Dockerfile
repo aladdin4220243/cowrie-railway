@@ -1,23 +1,27 @@
-#!/bin/bash
-set -e
+FROM python:3.11-slim
 
-echo "==> Starting Cowrie SSH honeypot on port 2222..."
-cd /cowrie
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Start Cowrie using twistd directly
-twistd -n --pidfile= -y bin/cowrie.tac &
-COWRIE_PID=$!
-echo "==> Cowrie started (PID $COWRIE_PID)"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git libssl-dev libffi-dev build-essential openssh-client \
+    && rm -rf /var/lib/apt/lists/*
 
-echo "==> Waiting 5s for Cowrie to initialise..."
-sleep 5
+RUN git clone https://github.com/cowrie/cowrie.git /cowrie
+WORKDIR /cowrie
 
-echo "==> Starting forwarder → ${INGESTION_URL:-NOT_SET}"
-python /cowrie/forwarder.py &
-FORWARDER_PID=$!
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir requests
 
-echo "==> Both running. Cowrie=$COWRIE_PID Forwarder=$FORWARDER_PID"
+RUN ssh-keygen -t rsa -b 2048 -f /cowrie/etc/ssh_host_rsa_key -N "" -q && \
+    ssh-keygen -t dsa -f /cowrie/etc/ssh_host_dsa_key -N "" -q
 
-wait -n
-echo "==> A process exited. Restarting container..."
-exit 1
+COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
+COPY forwarder.py  /cowrie/forwarder.py
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh && \
+    mkdir -p /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
+
+EXPOSE 2222
+
+ENTRYPOINT ["/entrypoint.sh"]
