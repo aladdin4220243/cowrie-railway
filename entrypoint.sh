@@ -9,8 +9,7 @@ if [ ! -f etc/ssh_host_rsa_key ]; then
     echo "==> RSA key generated"
 fi
 
-# تشغيل twistd مباشرة بدل cowrie start
-twistd -n --pidfile= cowrie &
+twistd -n --pidfile= --rundir=/cowrie cowrie &
 COWRIE_PID=$!
 echo "==> Cowrie started (PID $COWRIE_PID)"
 
