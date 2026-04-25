@@ -12,6 +12,10 @@ WORKDIR /cowrie
 RUN pip install --no-cache-dir -e . && \
     pip install --no-cache-dir requests
 
+# إنشاء الـ fake filesystem
+RUN mkdir -p /cowrie/share/cowrie/contents/etc && \
+    cp -r honeyfs/* /cowrie/share/cowrie/contents/ 2>/dev/null || true
+
 # تسجيل الـ twisted plugin يدوياً
 RUN cp src/twisted/plugins/cowrie_plugin.py \
     /usr/local/lib/python3.11/site-packages/twisted/plugins/
