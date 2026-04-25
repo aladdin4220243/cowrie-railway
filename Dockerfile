@@ -12,15 +12,15 @@ WORKDIR /cowrie
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir requests
 
+RUN echo "=== bin/ ===" && ls -la bin/
+
 RUN mkdir -p /cowrie/etc /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
 
 COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
-RUN ls /cowrie/bin/ && ls /cowrie/
 COPY forwarder.py  /cowrie/forwarder.py
 COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 2222
-
 ENTRYPOINT ["/entrypoint.sh"]
