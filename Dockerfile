@@ -18,7 +18,12 @@ COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
 COPY forwarder.py  /cowrie/forwarder.py
 COPY entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+# إنشاء user غير root
+RUN useradd -m cowrie && \
+    chown -R cowrie:cowrie /cowrie && \
+    chmod +x /entrypoint.sh
+
+USER cowrie
 
 EXPOSE 2222
 ENTRYPOINT ["/entrypoint.sh"]
