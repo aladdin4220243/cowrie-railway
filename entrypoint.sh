@@ -5,14 +5,17 @@ cd /cowrie
 
 echo "==> Starting Cowrie..."
 
-# توليد مفتاح RSA إذا لم يكن موجودًا
+# توليد مفتاح RSA في المكان الصحيح
 if [ ! -f etc/ssh_host_rsa_key ]; then
+    mkdir -p etc
     ssh-keygen -t rsa -b 2048 -f etc/ssh_host_rsa_key -N "" -q
-    echo "==> RSA key generated"
+    echo "==> RSA key generated at etc/ssh_host_rsa_key"
+else
+    echo "==> RSA key already exists"
 fi
 
-# تشغيل Cowrie باستخدام twistd مباشرة
-twistd -n --pidfile= --rundir=/cowrie cowrie
+# التحقق من وجود المفاتيح
+ls -la etc/*.key 2>/dev/null || echo "WARNING: No keys found!"
 
-# forwarder.py سيعمل في الخلفية
-# python /cowrie/forwarder.py & (إذا أردت تفعيله لاحقًا)
+# تشغيل Cowrie
+twistd -n --pidfile= --rundir=/cowrie cowrie
