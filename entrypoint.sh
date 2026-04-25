@@ -1,21 +1,28 @@
-#!/bin/bash
-set -e
+[honeypot]
+hostname = svr04
+log_path = var/log/cowrie
+download_path = var/lib/cowrie/downloads
+share_path = share/cowrie
+state_path = var/lib/cowrie
+etc_path = etc
+contents_path = share/cowrie/contents
+close_timeout = 30
+interactive_timeout = 180
 
-cd /cowrie
+[ssh]
+enabled = true
+listen_endpoints = tcp:2222:interface=0.0.0.0
+version = SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2
+rsa_public_key = etc/ssh_host_rsa_key.pub
+rsa_private_key = etc/ssh_host_rsa_key
+public_key_auth = false
 
-echo "==> Starting Cowrie..."
+[telnet]
+enabled = false
 
-# توليد مفتاح RSA في المكان الصحيح
-if [ ! -f etc/ssh_host_rsa_key ]; then
-    mkdir -p etc
-    ssh-keygen -t rsa -b 2048 -f etc/ssh_host_rsa_key -N "" -q
-    echo "==> RSA key generated at etc/ssh_host_rsa_key"
-else
-    echo "==> RSA key already exists"
-fi
+[output_jsonlog]
+enabled = true
+logfile = ${honeypot:log_path}/cowrie.json
 
-# التحقق من وجود المفاتيح
-ls -la etc/*.key 2>/dev/null || echo "WARNING: No keys found!"
-
-# تشغيل Cowrie
-twistd -n --pidfile= --rundir=/cowrie cowrie
+[llm]
+enabled = false
