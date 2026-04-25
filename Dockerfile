@@ -12,13 +12,16 @@ WORKDIR /cowrie
 RUN pip install --no-cache-dir -e . && \
     pip install --no-cache-dir requests
 
+# تسجيل الـ twisted plugin يدوياً
+RUN cp src/twisted/plugins/cowrie_plugin.py \
+    /usr/local/lib/python3.11/site-packages/twisted/plugins/
+
 RUN mkdir -p /cowrie/etc /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
 
 COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
 COPY forwarder.py  /cowrie/forwarder.py
 COPY entrypoint.sh /entrypoint.sh
 
-# إنشاء user غير root
 RUN useradd -m cowrie && \
     chown -R cowrie:cowrie /cowrie && \
     chmod +x /entrypoint.sh
