@@ -9,10 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN git clone https://github.com/cowrie/cowrie.git /cowrie
 WORKDIR /cowrie
 
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN pip install --no-cache-dir -e . && \
     pip install --no-cache-dir requests
-
-RUN echo "=== bin/ ===" && ls -la bin/
 
 RUN mkdir -p /cowrie/etc /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
 
