@@ -10,20 +10,14 @@ if [ ! -f etc/ssh_host_rsa_key ]; then
     echo "==> RSA key generated"
 fi
 
-# Start Cowrie using the correct method
-python bin/cowrie start
+# Start Cowrie correctly (bin/cowrie is a shell script, not Python)
+bin/cowrie start
 echo "==> Cowrie started"
 
-echo "==> Waiting 8s for Cowrie to initialise..."
 sleep 8
 
 echo "==> Starting forwarder → ${INGESTION_URL:-NOT_SET}"
 python /cowrie/forwarder.py &
-FORWARDER_PID=$!
-echo "==> Forwarder started (PID $FORWARDER_PID)"
 
-# Keep container alive — tail the Cowrie log
-tail -f var/log/cowrie/cowrie.json &
-
-# Wait for forwarder to exit (shouldn't happen)
-wait $FORWARDER_PID
+# Keep container alive
+tail -f var/log/cowrie/cowrie.json
