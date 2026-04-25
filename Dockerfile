@@ -3,7 +3,7 @@ FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git libssl-dev libffi-dev build-essential \
+    git libssl-dev libffi-dev build-essential openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Cowrie from source
@@ -12,6 +12,10 @@ WORKDIR /cowrie
 
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir requests
+
+# Generate SSH keys at build time (avoids needing ssh-keygen at runtime)
+RUN ssh-keygen -t rsa -b 2048 -f /cowrie/etc/ssh_host_rsa_key -N "" -q && \
+    ssh-keygen -t dsa -f /cowrie/etc/ssh_host_dsa_key -N "" -q
 
 # Copy our files
 COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
