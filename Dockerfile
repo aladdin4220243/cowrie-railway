@@ -12,15 +12,13 @@ WORKDIR /cowrie
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir requests
 
-RUN ssh-keygen -t rsa -b 2048 -f /cowrie/etc/ssh_host_rsa_key -N "" -q && \
-    ssh-keygen -t dsa -f /cowrie/etc/ssh_host_dsa_key -N "" -q
+RUN mkdir -p /cowrie/etc /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
 
 COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
 COPY forwarder.py  /cowrie/forwarder.py
 COPY entrypoint.sh /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh && \
-    mkdir -p /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 2222
 
