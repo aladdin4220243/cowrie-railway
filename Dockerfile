@@ -1,18 +1,26 @@
-FROM cowrie/cowrie:latest
+FROM python:3.11-slim
 
-USER root
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python requests for the forwarder
-RUN pip install --no-cache-dir requests
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git libssl-dev libffi-dev build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy our forwarder and config
-COPY forwarder.py   /cowrie/forwarder.py
-COPY cowrie.cfg     /cowrie/etc/cowrie.cfg
-COPY entrypoint.sh  /entrypoint.sh
+# Install Cowrie from source
+RUN git clone https://github.com/cowrie/cowrie.git /cowrie
+WORKDIR /cowrie
 
-RUN chmod +x /entrypoint.sh
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir requests
 
-# Cowrie SSH honeypot on 2222
+# Copy our files
+COPY cowrie.cfg    /cowrie/etc/cowrie.cfg
+COPY forwarder.py  /cowrie/forwarder.py
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh && \
+    mkdir -p /cowrie/var/log/cowrie /cowrie/var/lib/cowrie/downloads
+
 EXPOSE 2222
 
 ENTRYPOINT ["/entrypoint.sh"]
