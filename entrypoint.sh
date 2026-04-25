@@ -4,24 +4,26 @@ set -e
 echo "==> Starting Cowrie SSH honeypot on port 2222..."
 cd /cowrie
 
-# Generate RSA key only (DSA not supported in newer OpenSSH)
+# Generate RSA key if not present
 if [ ! -f etc/ssh_host_rsa_key ]; then
     ssh-keygen -t rsa -b 2048 -f etc/ssh_host_rsa_key -N "" -q
     echo "==> RSA key generated"
 fi
 
-# Start Cowrie using twistd
-twistd -n --pidfile= -y bin/cowrie.tac &
-COWRIE_PID=$!
-echo "==> Cowrie started (PID $COWRIE_PID)"
+# Start Cowrie using the correct method
+python bin/cowrie start
+echo "==> Cowrie started"
 
-echo "==> Waiting 5s..."
-sleep 5
+echo "==> Waiting 8s for Cowrie to initialise..."
+sleep 8
 
 echo "==> Starting forwarder → ${INGESTION_URL:-NOT_SET}"
 python /cowrie/forwarder.py &
 FORWARDER_PID=$!
+echo "==> Forwarder started (PID $FORWARDER_PID)"
 
-echo "==> Both running. Cowrie=$COWRIE_PID Forwarder=$FORWARDER_PID"
-wait -n
-exit 1
+# Keep container alive — tail the Cowrie log
+tail -f var/log/cowrie/cowrie.json &
+
+# Wait for forwarder to exit (shouldn't happen)
+wait $FORWARDER_PID
